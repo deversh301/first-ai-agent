@@ -7,6 +7,7 @@ const credentials = JSON.parse(
 );
 
 const token = JSON.parse(
+  
   fs.readFileSync("token.json", "utf8")
 );
 
