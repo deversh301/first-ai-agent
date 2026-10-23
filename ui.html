@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shinbyte AI Generator</title>
+
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 28px 36px;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    color: #e5e7eb;
+    background: #080d18;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 32px;
+    border: 1px solid #263247;
+    border-radius: 20px;
+    background: #101827;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: 30px;
+    letter-spacing: -0.7px;
+    color: #f8fafc;
+  }
+
+  .muted {
+    margin: 0;
+    max-width: 850px;
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .section {
+    position: relative;
+    margin-top: 22px;
+    padding: 24px;
+    border: 1px solid #29364a;
+    border-radius: 14px;
+    background: #141f30;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .section:hover {
+    border-color: #3b5273;
+    background: #162235;
+  }
+
+  .section h2,
+  main > section > h2 {
+    margin: 0 0 10px;
+    color: #f1f5f9;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .action-description {
+    margin: 0 0 16px;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  input,
+  textarea {
+    display: block;
+    width: 100%;
+    margin: 0 0 12px;
+    padding: 13px 14px;
+    border: 1px solid #334155;
+    border-radius: 9px;
+    outline: none;
+    background: #0b1220;
+    color: #e5e7eb;
+    font: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #64748b;
+  }
+
+  input:focus,
+  textarea:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.7;
+  }
+
+  #imagePrompt {
+    background: #0b1220;
+    color: #cbd5e1;
+    font-size: 13px;
+  }
+
+  #bulkFiles {
+    padding: 12px;
+    background: #0b1220;
+    cursor: pointer;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 46px;
+    padding: 13px 16px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  button:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  .sync-btn {
+    background: #2563eb;
+  }
+
+  .sync-btn:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+
+  .deploy-btn {
+    background: #15803d;
+  }
+
+  .deploy-btn:hover:not(:disabled) {
+    background: #166534;
+  }
+
+  #copyPromptStatus {
+    margin-top: 12px;
+    margin-bottom: 0;
+  }
+
+  #status {
+    display: none;
+    margin-top: 22px;
+    padding: 15px 17px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .success {
+    display: block !important;
+    border-color: #166534;
+    background: #102c20;
+    color: #86efac;
+  }
+
+  .error {
+    display: block !important;
+    border-color: #7f1d1d;
+    background: #321719;
+    color: #fca5a5;
+  }
+
+  .loading {
+    display: block !important;
+    border-color: #1e40af;
+    background: #142440;
+    color: #bfdbfe;
+  }
+
+  @media (min-width: 1200px) {
+    .card {
+      padding: 36px;
+    }
+
+    .section {
+      padding: 26px 28px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    body {
+      padding: 16px;
+    }
+
+    .card {
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 25px;
+    }
+
+    .section {
+      padding: 18px;
+      margin-top: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 10px;
+    }
+
+    .card {
+      padding: 14px;
+      border-radius: 13px;
+    }
+
+    .section {
+      padding: 15px;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <main class="card">
+  <h1>✨ Shinbyte AI</h1>
+  <p class="muted">
+    Your landing page workflow, organized from content generation
+    to final deployment. Complete each step in order.
+  </p>
+
+  <!-- Step 1 -->
+  <section class="section">
+    <h2>Step 1 · Google Sync & Landing Page Generation</h2>
+    <p class="action-description">
+      Sync your Google Sheets data and generate landing page
+      content using your existing workflow.
+    </p>
+
+    <button
+      id="syncBtn"
+      class="sync-btn"
+      type="button"
+    >
+      📊 Sync Google Sheets
+    </button>
+  </section>
+
+  <!-- Step 2 -->
+  <section class="section">
+    <h2>Step 2 · Generate Image Using AI</h2>
+    <p class="action-description">
+      Enter your app details and copy the ready-to-use prompt.
+      Upload your existing image to an AI image generator and
+      paste the prompt to create a matching landing page visual.
+    </p>
+
+    <input
+      id="appName"
+      type="text"
+      placeholder="App name (e.g. FiLearner)"
+    />
+
+    <textarea
+      id="appIdea"
+      placeholder="Describe your app idea and its main features..."
+      rows="4"
+    ></textarea>
+
+    <textarea
+      id="imagePrompt"
+      rows="9"
+      readonly
+    ></textarea>
+
+    <button
+      id="copyImagePromptBtn"
+      class="sync-btn"
+      type="button"
+    >
+      📋 Copy AI Image Prompt
+    </button>
+
+    <p id="copyPromptStatus" class="action-description"></p>
+  </section>
+
+  <!-- Step 3 -->
+  <section class="section">
+    <h2>Step 3 · Move Files</h2>
+    <p class="action-description">
+      Select the generated images or other files to move them
+      to your configured destination folder. Existing files
+      with matching names will be replaced.
+    </p>
+
+    <!-- <input
+      id="bulkFiles"
+      type="file"
+      multiple
+    /> -->
+
+    <button
+      id="uploadBtn"
+      class="sync-btn"
+      type="button"
+    >
+      📁 Move Files to Destination
+    </button>
+  </section>
+
+  <!-- Step 4 -->
+  <section class="section">
+    <h2>Step 4 · Verify & Deploy</h2>
+    <p class="action-description">
+      Verify your updated landing page and assets before
+      publishing the latest changes.
+    </p>
+
+    <button
+      id="deployBtn"
+      class="deploy-btn"
+      type="button"
+    >
+      🚀 Verify & Deploy Changes
+    </button>
+  </section>
+
+   <!-- Step 2 -->
+  <section class="section">
+    <h2>Step 2 · Send Email</h2>
+    <p class="action-description">
+      Enter your app details and copy the ready-to-use prompt.
+      Upload your existing image to an AI image generator and
+      paste the prompt to create a matching landing page visual.
+    </p>
+
+    <input
+      id="ideaName"
+      type="text"
+      placeholder="App name (e.g. FiLearner)"
+    />
+
+    <input
+      id="emailSubject"
+      type="text"
+      placeholder="Email subject"
+    />
+
+    <textarea
+      id="emailmsg"
+      placeholder="Enter your email message here..."
+      rows="6"
+    ></textarea>
+
+    <button
+      id="sendEmailBtn"
+      class="sync-btn"
+      type="button"
+    >
+      📋 Send Email
+    </button>
+
+    <p id="copyPromptStatus" class="action-description"></p>
+  </section>
+
+
+  <div id="status" role="status" aria-live="polite"></div>
+</main>
+
+  <script>
+    const syncBtn = document.getElementById("syncBtn");
+    const deployBtn = document.getElementById("deployBtn");
+    const status = document.getElementById("status");
+
+    const appNameInput = document.getElementById("appName");
+  const appIdeaInput = document.getElementById("appIdea");
+  const imagePromptInput = document.getElementById("imagePrompt");
+  const copyImagePromptBtn = document.getElementById("copyImagePromptBtn");
+  const copyPromptStatus = document.getElementById("copyPromptStatus");
+
+  function generateImagePrompt() {
+    const appName =
+      appNameInput.value.trim() || "{APP_NAME}";
+
+    const appIdea =
+  appIdeaInput.value.trim() || "{APP_IDEA}";
+
+imagePromptInput.value = `Update the uploaded image for my app named "${appName}".
+
+App Idea: ${appIdea}
+
+Redesign the uploaded image to match my app idea. Replace the existing branding, dashboard content, features, charts, and floating cards with visuals relevant to my app.
+
+Show a modern SaaS dashboard with relevant features, statistics, activity tracking, charts, and UI elements that clearly communicate the app's purpose.
+
+Display "${appName}" clearly and accurately in the dashboard. Preserve the app name's exact spelling, capitalization, and letter case.
+
+Keep the original image's overall composition and premium visual style, including the laptop mockup, floating feature cards, soft background, rounded UI elements, subtle shadows, and professional lighting. Adapt the colors and dashboard elements to suit the app idea.
+
+Make the final image clean, modern, visually attractive, high-quality, and suitable for a SaaS landing page hero section. Avoid unnecessary text, clutter, incorrect spelling, distorted UI elements, and unrelated features.
+
+OUTPUT FILENAME REQUIREMENT:
+Save the generated image as "${appName}.png".
+
+Use the app name exactly as provided, preserving its original uppercase and lowercase letters, spelling, and capitalization. Do not convert the name to lowercase, modify it, or replace it with a generic filename.
+
+Examples:
+- App name: FiLearner -> Filename: FiLearner.png
+- App name: ShinbyteAI -> Filename: ShinbyteAI.png
+- App name: nolearntracker -> Filename: nolearntracker.png
+
+Generate the updated image directly, ready to use on my landing page.`;
+
+}
+
+  appNameInput.addEventListener("input", generateImagePrompt);
+  appIdeaInput.addEventListener("input", generateImagePrompt);
+
+  copyImagePromptBtn.addEventListener("click", async () => {
+    generateImagePrompt();
+
+    try {
+      await navigator.clipboard.writeText(imagePromptInput.value);
+      copyPromptStatus.textContent =
+        "✅ Prompt copied! Upload your image to an AI image generator and paste it.";
+    } catch (error) {
+      imagePromptInput.focus();
+      imagePromptInput.select();
+
+      const copied = document.execCommand("copy");
+
+      copyPromptStatus.textContent = copied
+        ? "✅ Prompt copied!"
+        : "Select and copy the prompt manually.";
+    }
+  });
+
+  generateImagePrompt();
+
+    // Same existing API call and response behaviour.
+    // No endpoint or request payload changes.
+    syncBtn.addEventListener("click", async () => {
+      syncBtn.disabled = true;
+      syncBtn.textContent = "Syncing...";
+
+      status.className = "loading";
+      status.textContent =
+        "AI is generating your content and HTML. Please wait...";
+
+      try {
+        const response = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Generation failed.");
+        }
+
+        status.className = "success";
+        status.replaceChildren();
+
+        const heading = document.createElement("strong");
+        heading.textContent = "✓ HTML added successfully!";
+
+        
+
+        status.append(heading);
+      } catch (error) {
+        status.className = "error";
+        status.textContent = "Generation failed: " + error.message;
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.textContent = "Sync Google Sheets";
+      }
+    });
+
+    deployBtn.addEventListener("click", async () => {
+      deployBtn.disabled = true;
+      deployBtn.textContent = "Deploying...";
+
+      status.className = "loading";
+      status.textContent = "Committing and pushing changes. Please wait...";
+
+      try {
+        const response = await fetch("/run-git-deploy", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || result.message || "Deployment failed.");
+        }
+
+        status.className = "success";
+        status.textContent = result.message;
+
+      } catch (error) {
+        status.className = "error";
+        status.textContent = "Deployment failed: " + error.message;
+      } finally {
+        deployBtn.disabled = false;
+        deployBtn.textContent = "Deploy Changes";
+      }
+    });
+
+const sendEmailBtn = document.getElementById("sendEmailBtn");
+  sendEmailBtn.addEventListener("click", async () => {
+    sendEmailBtn.disabled = true;
+      sendEmailBtn.textContent = "Sending...";
+
+      status.className = "loading";
+      status.textContent = "Sending email. Please wait...";
+
+      try {
+        const response = await fetch("/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            ideaName: document.getElementById("ideaName").value,
+            emailSubject: document.getElementById("emailSubject").value,
+            emailmsg: document.getElementById("emailmsg").value
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || result.message || "Email sending failed.");
+        }
+
+        status.className = "success";
+        status.textContent = result.message;
+
+      } catch (error) {
+        status.className = "error";
+        status.textContent = "Email sending failed: " + error.message;
+      } finally {
+        sendEmailBtn.disabled = false;
+        sendEmailBtn.textContent = "Send Email";
+      }
+});
+
+    
+// const bulkFiles = document.getElementById("bulkFiles");
+// const selectedFiles = document.getElementById("selectedFiles");
+const uploadBtn = document.getElementById("uploadBtn");
+
+// bulkFiles.addEventListener("change", () => {
+//   const files = Array.from(bulkFiles.files);
+
+//   selectedFiles.textContent = files.length
+//     ? `${files.length} file(s) selected: ${files
+//         .map(file => file.name)
+//         .join(", ")}`
+//     : "No files selected.";
+// });
+
+uploadBtn.addEventListener("click", async () => {
+//  const response = await fetch("/move-files", {
+//   method: "POST",
+// });
+
+// const result = await response.json();
+// console.log(result);
+
+try {
+        const response = await fetch("/move-files", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || result.message || "Deployment failed.");
+        }
+
+        status.className = "success";
+        status.textContent = result.message;
+
+      } catch (error) {
+        status.className = "error";
+        status.textContent = "Deployment failed: " + error.message;
+      } finally {
+        deployBtn.disabled = false;
+        deployBtn.textContent = "Deploy Changes";
+      }
+});
+
+
+  </script>
+</body>
+</html>
